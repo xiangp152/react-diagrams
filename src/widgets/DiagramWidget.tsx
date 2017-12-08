@@ -1,11 +1,11 @@
 import * as React from "react";
-import { DiagramEngine } from "../DiagramEngine";
+import {DiagramEngine} from "../DiagramEngine";
 import * as _ from "lodash";
-import { PointModel, NodeModel, BaseModel, BaseModelListener, LinkModel, PortModel } from "../Common";
-import { LinkLayerWidget } from "./LinkLayerWidget";
-import { NodeLayerWidget } from "./NodeLayerWidget";
-import { Toolkit } from "../Toolkit";
-import { BaseAction, MoveCanvasAction, MoveItemsAction, SelectingAction } from "../CanvasActions";
+import {BaseModel, BaseModelListener, NodeModel, PointModel, PortModel} from "../Common";
+import {LinkLayerWidget} from "./LinkLayerWidget";
+import {NodeLayerWidget} from "./NodeLayerWidget";
+import {Toolkit} from "../Toolkit";
+import {BaseAction, MoveCanvasAction, MoveItemsAction, SelectingAction} from "../CanvasActions";
 
 export interface SelectionModel {
 	model: BaseModel<BaseModelListener>;
@@ -76,23 +76,23 @@ export class DiagramWidget extends React.Component<DiagramProps, DiagramState> {
 		window.removeEventListener("mouseMove", this.onMouseMove);
 	}
 
-  componentWillReceiveProps(nextProps: DiagramProps) {
-    if (this.props.diagramEngine !== nextProps.diagramEngine) {
-      this.props.diagramEngine.removeListener(this.state.diagramEngineListener);
-      const diagramEngineListener = nextProps.diagramEngine.addListener({
-        repaintCanvas: () => this.forceUpdate()
-      });
-      this.setState({diagramEngineListener});
-    }
-  }
+	componentWillReceiveProps(nextProps: DiagramProps) {
+		if (this.props.diagramEngine !== nextProps.diagramEngine) {
+			this.props.diagramEngine.removeListener(this.state.diagramEngineListener);
+			const diagramEngineListener = nextProps.diagramEngine.addListener({
+				repaintCanvas: () => this.forceUpdate()
+			});
+			this.setState({diagramEngineListener});
+		}
+	}
 
 	componentWillUpdate(nextProps: DiagramProps) {
 		if (this.props.diagramEngine.diagramModel.id !== nextProps.diagramEngine.diagramModel.id) {
-			this.setState({ renderedNodes: false });
+			this.setState({renderedNodes: false});
 			nextProps.diagramEngine.diagramModel.rendered = true;
 		}
 		if (!nextProps.diagramEngine.diagramModel.rendered) {
-			this.setState({ renderedNodes: false });
+			this.setState({renderedNodes: false});
 			nextProps.diagramEngine.diagramModel.rendered = true;
 		}
 	}
@@ -181,7 +181,7 @@ export class DiagramWidget extends React.Component<DiagramProps, DiagramState> {
 		if (this.props.actionStoppedFiring && !shouldSkipEvent) {
 			this.props.actionStoppedFiring(this.state.action);
 		}
-		this.setState({ action: null });
+		this.setState({action: null});
 	}
 
 	startFiringAction(action: BaseAction) {
@@ -190,7 +190,7 @@ export class DiagramWidget extends React.Component<DiagramProps, DiagramState> {
 			setState = this.props.actionStartedFiring(action);
 		}
 		if (setState) {
-			this.setState({ action: action });
+			this.setState({action: action});
 		}
 	}
 
@@ -226,7 +226,7 @@ export class DiagramWidget extends React.Component<DiagramProps, DiagramState> {
 			this.state.action.mouseY2 = relative.y;
 
 			this.fireAction();
-			this.setState({ action: this.state.action });
+			this.setState({action: this.state.action});
 			return;
 		} else if (this.state.action instanceof MoveItemsAction) {
 			let amountX = event.clientX - this.state.action.mouseX;
@@ -395,7 +395,7 @@ export class DiagramWidget extends React.Component<DiagramProps, DiagramState> {
 					}
 				}}
 				onMouseDown={(event) => {
-					this.setState({ ...this.state, wasMoved: false });
+					this.setState({...this.state, wasMoved: false});
 
 					diagramEngine.clearRepaintEntities();
 					var model = this.getMouseElement(event);
@@ -440,6 +440,13 @@ export class DiagramWidget extends React.Component<DiagramProps, DiagramState> {
 					this.state.document.addEventListener("mousemove", this.onMouseMove);
 					this.state.document.addEventListener("mouseup", this.onMouseUp);
 				}}
+				onDoubleClick={(event) => {
+					var model = this.getMouseElement(event);
+					if (model && model.model instanceof NodeModel) {
+						console.log("double click node");
+						model.model.doubleClicked();
+					}
+				}}
 			>
 				{this.state.renderedNodes && (
 					<LinkLayerWidget
@@ -455,7 +462,7 @@ export class DiagramWidget extends React.Component<DiagramProps, DiagramState> {
 						}}
 					/>
 				)}
-				<NodeLayerWidget diagramEngine={diagramEngine} />
+				<NodeLayerWidget diagramEngine={diagramEngine}/>
 				{this.state.action instanceof SelectingAction && this.drawSelectionBox()}
 			</div>
 		);

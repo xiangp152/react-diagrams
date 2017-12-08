@@ -1,12 +1,12 @@
-import { BaseEntity, BaseListener } from "./BaseEntity";
+import {BaseEntity, BaseListener} from "./BaseEntity";
 import * as _ from "lodash";
-import { port } from "_debugger";
-import { DiagramEngine } from "./DiagramEngine";
 
 export interface BaseModelListener extends BaseListener {
 	selectionChanged?(item: BaseModel<BaseModelListener>, isSelected: boolean): void;
 
 	entityRemoved?(item: any): void;
+
+	doubleClicked?(item: BaseModel<BaseModelListener>): void;
 }
 
 /**
@@ -63,6 +63,14 @@ export class BaseModel<T extends BaseModelListener> extends BaseEntity<BaseModel
 			}
 		});
 	}
+
+	doubleClicked(){
+		this.iterateListeners(listener => {
+			if (listener.doubleClicked) {
+				listener.doubleClicked(this);
+			}
+		});
+	}
 }
 
 export class PointModel extends BaseModel<BaseModelListener> {
@@ -75,8 +83,8 @@ export class PointModel extends BaseModel<BaseModelListener> {
 		this.x = points.x;
 		this.y = points.y;
 		this.link = link;
-	}	
-	
+	}
+
 	getSelectedEntities() {
 		if (super.isSelected() && !this.isConnectedToPort()) {
 			return [this];
@@ -143,7 +151,7 @@ export class LinkModel extends BaseModel<LinkModelListener> {
 	constructor() {
 		super();
 		this.linkType = "default";
-		this.points = [new PointModel(this, { x: 0, y: 0 }), new PointModel(this, { x: 0, y: 0 })];
+		this.points = [new PointModel(this, {x: 0, y: 0}), new PointModel(this, {x: 0, y: 0})];
 		this.extras = {};
 		this.sourcePort = null;
 		this.targetPort = null;
@@ -154,7 +162,7 @@ export class LinkModel extends BaseModel<LinkModelListener> {
 		this.linkType = ob.type;
 		this.extras = ob.extras;
 		this.points = _.map(ob.points, (point: { x; y }) => {
-			var p = new PointModel(this, { x: point.x, y: point.y });
+			var p = new PointModel(this, {x: point.x, y: point.y});
 			p.deSerialize(point);
 			return p;
 		});
@@ -349,12 +357,12 @@ export class NodeModel extends BaseModel<BaseModelListener> {
 		this.ports = {};
 	}
 
-	setPosition(x, y){
+	setPosition(x, y) {
 		//store position
 		let oldX = this.x;
 		let oldY = this.y;
 
-		for(let port in this.ports){
+		for (let port in this.ports) {
 			_.forEach(this.ports[port].getLinks(), (link) => {
 				let point = link.getPointForPort(this.ports[port]);
 				point.x = point.x + x - oldX;
